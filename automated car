@@ -1,0 +1,202 @@
+#include <Servo.h>
+
+int M10=4;  
+int M11=5;
+int M20=6;
+int M21=7;
+
+int L_S=12;
+int R_S=13;
+long duration;
+int distance;
+int pos = 0;
+const int trigPin =10; // Trigger Pin of Ultrasonic Sensor
+const int echoPin =11; // Echo Pin of Ultrasonic Sensor
+int distl,distc,distr;
+int sw=A0;
+
+Servo  myServo; // Echo Pin of Ultrasonic Sensor
+void setup()
+{
+   myServo.attach(9);
+pinMode(M10,OUTPUT);
+pinMode(M11,OUTPUT);
+pinMode(M20,OUTPUT);
+pinMode(M21,OUTPUT);
+pinMode(R_S,INPUT);
+pinMode(L_S,INPUT);
+Serial.begin(9600);  //baudrate
+pinMode(echoPin,INPUT);
+pinMode(trigPin,OUTPUT);
+pinMode(sw,INPUT);
+}
+
+void loop()
+{
+  if(digitalRead(sw)==0)
+  {
+    Serial.println("line follower");
+    line_follower();
+  }
+  else
+  {
+    Serial.println("obstacle");
+ forward();
+for (pos = 0; pos <= 180; pos += 1) 
+{ // goes from 0 degrees to 180 degrees
+    // in steps of 1 degree
+    myServo.write(pos);              // tell servo to go to position in variable 'pos'                      // waits 15 ms for the servo to reach the position
+    delay(15);
+    ultrasonic_init();
+  }
+  for (pos = 180; pos >= 0; pos -= 1) { // goes from 180 degrees to 0 degrees
+    myServo.write(pos);              // tell servo to go to position in variable 'pos'
+     delay(15);
+    ultrasonic_init();
+                           // waits 15 ms for the servo to reach the position
+  }
+  }
+
+}
+
+void distance_find()
+{
+  digitalWrite(trigPin, LOW);
+delayMicroseconds(2);
+// Sets the trigPin on HIGH state for 10 micro seconds
+digitalWrite(trigPin, HIGH);
+delayMicroseconds(10);
+digitalWrite(trigPin, LOW);
+// Reads the echoPin, returns the sound wave travel time in microseconds
+duration = pulseIn(echoPin, HIGH);
+// Calculating the distance
+distance= duration*0.034/2;
+Serial.print("Distance: ");
+Serial.println(distance);
+
+}
+
+//////////////////////////////////////////////////////////////////////////////
+//========================RADAR OPERATION=======================//
+void ultrasonic_init()
+{
+    
+
+
+// Prints the distance on the Serial Monitor
+
+ distance_find();
+   if ((distance<=5)&&((distance>1)))
+{
+  Serial.println("Object at left");
+  Stop();
+  delay(1000);
+  right();
+  delay(1000);
+  Stop();
+  delay(100);
+  forward();
+  delay(1000);
+  Stop();
+  delay(100);
+  left();
+  delay(1000);
+  forward();
+  delay(500);
+}
+
+
+}
+
+
+//=================================================//
+void line_follower()
+{
+ if((digitalRead(R_S) == 0)&&(digitalRead(L_S) == 0))
+ {
+    digitalWrite(M10, 1);
+    digitalWrite(M11, 0);
+    digitalWrite(M20, 1);
+    digitalWrite(M21, 0);
+ }
+ else if((digitalRead(R_S) == 1)&&(digitalRead(L_S) == 0))
+ {
+   left();  
+ }
+ else if((digitalRead(R_S) == 0)&&(digitalRead(L_S) == 1))
+ {
+  right() ; 
+ }
+ 
+ else
+ {
+    Stop();
+ }
+}
+
+
+long microsecondsToInches(long microseconds)
+{
+   return microseconds / 74 / 2;
+}
+
+long microsecondsToCentimeters(long microseconds)
+{
+   return microseconds / 29 / 2;
+}
+
+
+
+void forward()                                     //robot forward
+{
+  digitalWrite(M10,1);
+  digitalWrite(M11,0);
+  digitalWrite(M20,1);
+  digitalWrite(M21,0);
+}
+
+void back()                                     //robot back
+{
+  digitalWrite(M10,0);
+  digitalWrite(M11,1);
+  digitalWrite(M20,0);
+  digitalWrite(M21,1);
+}
+
+void right()                                     //motor right
+{
+  digitalWrite(M10,1);
+  digitalWrite(M11,0);
+  digitalWrite(M20,0);
+  digitalWrite(M21,1);
+}
+void left()                                     //robo left
+{
+  digitalWrite(M10,0);
+  digitalWrite(M11,1);
+  digitalWrite(M20,1);
+  digitalWrite(M21,0);
+}
+
+void Stop()                                     //motor stop
+{
+  digitalWrite(M10,0);
+  digitalWrite(M11,0);
+  digitalWrite(M20,0);
+  digitalWrite(M21,0);
+}
+void left_rotate()                                     //motor stop
+{
+  digitalWrite(M10,1);
+  digitalWrite(M11,0);
+  digitalWrite(M20,0);
+  digitalWrite(M21,1);
+}
+
+void right_rotate()                                     //motor stop
+{
+  digitalWrite(M10,0);
+  digitalWrite(M11,1);
+  digitalWrite(M20,1);
+  digitalWrite(M21,0);
+}
